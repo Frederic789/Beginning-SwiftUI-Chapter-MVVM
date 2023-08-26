@@ -71,4 +71,15 @@ struct Course : Identifiable, Codable {
     let id = UUID()
     let name:String
     var isEnrolled = false
+    var sections: [Section] = []
+ 
 }
+
+struct Section: Identifiable, Codable {
+    let id = UUID()
+    var name: String
+    var isEnrolled = false
+}
+
+
+
