@@ -7,6 +7,7 @@
 
 import Foundation
 
+
 extension CoursesView {
     @MainActor class ViewModel: ObservableObject {
         @Published var allClasses = theCollege.allClasses
