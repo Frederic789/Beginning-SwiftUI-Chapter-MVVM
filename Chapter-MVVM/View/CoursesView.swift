@@ -1,47 +1,40 @@
-//
-//  CoursesView.swift
-//  Chapter-MVVM
-//
-//  Created by Mike Panitz on 5/16/23.
-//
 
 import SwiftUI
 
 struct CoursesView: View {
     @StateObject private var viewModel = ViewModel()
-    
+
     @State private var showAddClassActionSheet = false
     @State private var newDiscName = ""
     @State private var newCourseName = ""
-    
+    @State private var newSectionName = ""
+    @State private var selectedDiscipline: Discipline?
+
     var body: some View {
         VStack {
             Text("Courses")
                 .font(.title)
             List {
-                // If we want to change the structs:
-                // Use Bindings here
-                // And mark changeable fields as var, below
                 ForEach($viewModel.allClasses) { $disc in
                     Section(header: Text("\(disc.name) Courses:")) {
                         ForEach($disc.courses) { $course in
                             HStack {
                                 Text(course.name)
-                                    .swipeActions(edge: .trailing) {
-                                        Button {
-                                            course.isEnrolled.toggle()
-                                        } label: {
-                                            Image(systemName: "book")
-                                        }.tint(.green)
-                                    }
                                 Spacer()
-                                if course.isEnrolled {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(.green)
-                                        .font(.largeTitle)
+                                if let selectedDiscipline = selectedDiscipline,
+                                   let selectedCourse = $course.wrappedValue as? Course,
+                                   let selectedSection = selectedCourse.sections.first(where: { $0.name == newSectionName }),
+                                   !selectedSection.isEnrolled
+                                {
+                                    Button(action: {
+                                        selectedSection.isEnrolled = true
+                                        newSectionName = ""
+                                    }) {
+                                        Text("Enroll")
+                                    }
                                 } else {
-                                    Image(systemName: "plus")
-                                    
+                                    Text("Enrolled")
+                                        .foregroundColor(.green)
                                 }
                             }
                         }
@@ -64,16 +57,19 @@ struct CoursesView: View {
                 TextField("Ex: ENG, BIT", text: $newDiscName)
                 Text("Course name:")
                 TextField("Ex: Shakespeare, Intro To Web Design", text: $newCourseName)
+                Text("Section name:")
+                TextField("Ex: M/W 11am-1pm", text: $newSectionName)
                 HStack {
                     Button("Cancel") {
                         showAddClassActionSheet = false
                     }
                     Spacer()
-                    Button("Save" ) {
-                        viewModel.addNewCourse(discName: newDiscName, courseName: newCourseName)
-                        newDiscName = ""
-                        newCourseName = ""
-                        showAddClassActionSheet = false
+                    Button("Save") {
+                        if let selectedDiscipline = selectedDiscipline {
+                            viewModel.addNewSection(discName: selectedDiscipline.name, courseName: newCourseName, sectionName: newSectionName)
+                            newSectionName = ""
+                            showAddClassActionSheet = false
+                        }
                     }
                 }.padding()
             }.padding()
